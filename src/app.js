@@ -20,7 +20,7 @@ import { getMoveByDifficulty } from './ai.js';
 
 const MODE_LABELS = {
   pvp: 'Player vs. Player',
-  pvc: 'Human vs. Computer',
+  pvc: 'Player vs. Computer',
 };
 
 const COMPUTER = 'O'; // In HvC, the human plays X and the computer plays O.
