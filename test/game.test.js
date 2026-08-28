@@ -174,3 +174,65 @@ describe('checkWinner / win detection', () => {
     expect(state.winningLine).toBeNull();
   });
 });
+
+describe('edge cases: legality, precedence, immutability', () => {
+  it('rejects non-numeric and non-finite indices as illegal', () => {
+    const state = createInitialState();
+    expect(isLegalMove(state, '0')).toBe(false);
+    expect(isLegalMove(state, Infinity)).toBe(false);
+    expect(isLegalMove(state, -Infinity)).toBe(false);
+    expect(isLegalMove(state, null)).toBe(false);
+    expect(isLegalMove(state, undefined)).toBe(false);
+  });
+
+  it('a winning line on an otherwise-full board reports a win, not a draw', () => {
+    // Top row X wins, remaining cells filled — win must take precedence over draw.
+    const board = ['X', 'X', 'X', 'O', 'O', 'X', 'X', 'O', 'O'];
+    const state = { ...createInitialState(), board };
+    expect(checkWinner(state)).toBe('X');
+  });
+
+  it('the 9th move that completes a line is a win, not a draw', () => {
+    // Fill 8 cells leaving index 8 as the winning move: X completes the
+    // main diagonal [0,4,8] (X at 0,4,8) on the final move.
+    const board = ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'X', null];
+    let state = { ...createInitialState(), board, currentPlayer: 'X' };
+    state = applyMove(state, 8);
+    expect(state.status).toBe('won');
+    expect(state.winner).toBe('X');
+    expect(state.winningLine).toEqual([0, 4, 8]);
+  });
+
+  it('getAvailableMoves is empty for a finished draw', () => {
+    const board = ['X', 'X', 'O', 'O', 'O', 'X', 'X', 'X', 'O'];
+    const state = { ...createInitialState(), board, status: 'draw' };
+    expect(getAvailableMoves(state)).toEqual([]);
+  });
+
+  it('applyMove never mutates any field of the source state', () => {
+    const original = applyMove(createInitialState(), 0); // X at 0
+    const snapshot = JSON.parse(JSON.stringify(original));
+    applyMove(original, 4); // O at 4 (discarded)
+    expect(original).toEqual(snapshot);
+  });
+
+  it('applyMove alternates the mover correctly across a long sequence', () => {
+    let state = createInitialState();
+    const seq = [0, 8, 1, 7, 2]; // X,O,X,O,X wins top row
+    const expected = ['X', 'O', 'X', 'O', 'X'];
+    for (let i = 0; i < seq.length; i += 1) {
+      expect(state.currentPlayer).toBe(expected[i]);
+      state = applyMove(state, seq[i]);
+    }
+    expect(state.status).toBe('won');
+  });
+
+  it('every winning-line constant has exactly three distinct in-range indices', () => {
+    for (const line of WINNING_LINES) {
+      expect(line).toHaveLength(3);
+      expect(new Set(line).size).toBe(3);
+      line.forEach((i) => expect(i).toBeGreaterThanOrEqual(0) && expect(i).toBeLessThan(9));
+    }
+    expect(WINNING_LINES).toHaveLength(8);
+  });
+});

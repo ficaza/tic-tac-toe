@@ -6,7 +6,7 @@
  * to scale the computer opponent's strength:
  *
  * - "easy":   100% random — fully beatable.
- * - "medium": ~50% minimax / ~50% random — challenging but beatable.
+ * - "medium": 50% minimax / 50% random — challenging but beatable.
  * - "hard":   100% minimax — optimal, never loses.
  *
  * An injectable RNG (`rng`) is accepted throughout so the blend and random
@@ -89,14 +89,14 @@ export function getBestMove(state) {
   return bestMove;
 }
 
-/** Probability that "medium" plays the optimal (minimax) move. */
+/** Probability that "medium" plays the optimal (minimax) move (easy=0, medium=0.5, hard=1). */
 const MEDIUM_OPTIMAL_PROBABILITY = 0.5;
 
 /**
  * Difficulty dispatcher. Blends minimax and random selection per tier.
  *
  * - "easy":   always random.
- * - "medium": optimal with probability MEDIUM_OPTIMAL_PROBABILITY, else random.
+ * - "medium": optimal with probability 0.5, else random.
  * - "hard":   always optimal (minimax).
  *
  * @param {import('./game.js').GameState} state

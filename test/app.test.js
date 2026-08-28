@@ -12,7 +12,7 @@ const HTML = `
       <label for="mode-select">Mode</label>
       <select id="mode-select" data-control="mode">
         <option value="pvp" selected>Player vs. Player</option>
-        <option value="pvc">Human vs. Computer</option>
+        <option value="pvc">Player vs. Computer</option>
       </select>
     </div>
     <div class="control control--difficulty" id="difficulty-control" hidden>
@@ -119,7 +119,7 @@ describe('app DOM wiring', () => {
     expect(cell(0).textContent).toBe('');
     expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
     // Mode label updated
-    expect(document.querySelector('[data-mode-label]').textContent).toBe('Human vs. Computer');
+    expect(document.querySelector('[data-mode-label]').textContent).toBe('Player vs. Computer');
     expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(false);
     ctrl.destroy();
   });
@@ -177,5 +177,83 @@ describe('app DOM wiring', () => {
     // Human's X plus computer's O.
     expect(filled).toHaveLength(2);
     ctrl.destroy();
+  });
+
+  it('shows "Computer is thinking…" while the computer is preparing its move', () => {
+    const ctrl = setup();
+    document.querySelector('[data-control="mode"]').value = 'pvc';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    clickCell(0);
+    expect(document.getElementById('status').textContent).toBe('Computer is thinking…');
+    jest.advanceTimersByTime(400);
+    ctrl.destroy();
+  });
+
+  it('ignores human clicks made during the computer thinking window', () => {
+    const ctrl = setup();
+    document.querySelector('[data-control="mode"]').value = 'pvc';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    clickCell(0); // X
+    // Attempt a second human click before the computer moves.
+    clickCell(1);
+    expect(cell(1).textContent).toBe('');
+    // Still only one mark until the computer responds.
+    const filled = Array.from(document.querySelectorAll('.cell')).filter((c) => c.textContent !== '');
+    expect(filled).toHaveLength(1);
+    jest.advanceTimersByTime(400);
+    ctrl.destroy();
+  });
+
+  it('on hard difficulty the computer blocks an immediate human threat', () => {
+    const ctrl = setup();
+    document.querySelector('[data-control="mode"]').value = 'pvc';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    document.querySelector('[data-control="difficulty"]').value = 'hard';
+    document.querySelector('[data-control="difficulty"]').dispatchEvent(new Event('change'));
+    // Human X plays 0 then 1, threatening the top row at 2.
+    clickCell(0);
+    jest.advanceTimersByTime(400); // computer O responds
+    clickCell(1);
+    jest.advanceTimersByTime(400); // computer O must block at 2
+    expect(cell(2).textContent).toBe('O');
+    ctrl.destroy();
+  });
+
+  it('the reset button clears a board mid-game', () => {
+    const ctrl = setup();
+    clickCell(0);
+    clickCell(4);
+    clickCell(1);
+    expect(ctrl.getState().board.filter((c) => c !== null)).toHaveLength(3);
+    document.getElementById('reset-btn').click();
+    expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
+    expect(ctrl.getState().currentPlayer).toBe('X');
+    expect(ctrl.getState().status).toBe('ongoing');
+    ctrl.destroy();
+  });
+
+  it('changing difficulty in HvC resets the board', () => {
+    const ctrl = setup();
+    document.querySelector('[data-control="mode"]').value = 'pvc';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    clickCell(0);
+    jest.advanceTimersByTime(400);
+    expect(ctrl.getState().board.filter((c) => c !== null).length).toBeGreaterThan(0);
+    // Change difficulty -> board resets.
+    document.querySelector('[data-control="difficulty"]').value = 'hard';
+    document.querySelector('[data-control="difficulty"]').dispatchEvent(new Event('change'));
+    expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
+    expect(ctrl.getDifficulty()).toBe('hard');
+    ctrl.destroy();
+  });
+
+  it('destroys listeners: clicks no longer affect state after destroy', () => {
+    const ctrl = setup();
+    clickCell(0);
+    expect(ctrl.getState().board[0]).toBe('X');
+    ctrl.destroy();
+    clickCell(4);
+    // State captured at destroy time is untouched by later clicks.
+    expect(ctrl.getState().board[4]).toBeNull();
   });
 });
