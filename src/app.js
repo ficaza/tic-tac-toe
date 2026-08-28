@@ -149,15 +149,18 @@ export function init(rootEl) {
 
   function onModeChange() {
     mode = modeSelect.value;
-    difficultyControl.hidden = mode !== 'pvc';
-    if (mode === 'pvc') {
-      difficultyControl.removeAttribute('hidden');
-    }
+    // Difficulty is irrelevant in PvP: hide AND disable the control so it has
+    // no effect on the game and is not focusable/announced.
+    const pvc = mode === 'pvc';
+    difficultyControl.hidden = !pvc;
+    difficultySelect.disabled = !pvc;
     updateModeIndicator();
     reset();
   }
 
   function onDifficultyChange() {
+    // Difficulty only affects Human-vs-Computer; ignore changes otherwise.
+    if (mode !== 'pvc') return;
     difficulty = difficultySelect.value;
     reset();
   }
@@ -169,6 +172,8 @@ export function init(rootEl) {
   difficultySelect.addEventListener('change', onDifficultyChange);
   resetBtn.addEventListener('click', reset);
 
+  // Difficulty starts disabled (default mode is PvP where it has no effect).
+  difficultySelect.disabled = mode !== 'pvc';
   updateModeIndicator();
   render();
 

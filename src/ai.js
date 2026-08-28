@@ -1,30 +1,72 @@
 /**
  * Pure tic-tac-toe AI logic. No DOM access — fully unit-testable.
  *
- * Basic implementation: provides uniform random move selection and a simple
- * difficulty dispatcher. Optimal minimax play will be layered on top of this
- * module in a later iteration; for now this keeps the pipeline-test build
- * free of complex logic.
+ * Hybrid AI: a full minimax search (optimal play) combined with uniform
+ * random move selection. The two strategies are blended per difficulty tier
+ * to scale the computer opponent's strength:
+ *
+ * - "easy":   100% random — fully beatable.
+ * - "medium": ~50% minimax / ~50% random — challenging but beatable.
+ * - "hard":   100% minimax — optimal, never loses.
+ *
+ * An injectable RNG (`rng`) is accepted throughout so the blend and random
+ * selection are deterministic under test.
  */
 
-import { getAvailableMoves } from './game.js';
+import {
+  getAvailableMoves,
+  applyMove,
+  checkWinner,
+} from './game.js';
+
+/** Score awarded for a win (depth-adjusted so quicker wins rate higher). */
+const WIN_SCORE = 10;
 
 /**
  * Pick a uniformly random legal move index.
  * @param {import('./game.js').GameState} state
+ * @param {() => number} [rng] optional RNG in [0, 1); defaults to Math.random
  * @returns {number} a legal move index, or -1 if none are available
  */
-export function getRandomMove(state) {
+export function getRandomMove(state, rng = Math.random) {
   const moves = getAvailableMoves(state);
   if (moves.length === 0) return -1;
-  const idx = Math.floor(Math.random() * moves.length);
-  return moves[idx];
+  const idx = Math.floor(rng() * moves.length);
+  // Guard against rng()===1 producing an out-of-range index.
+  return moves[Math.min(idx, moves.length - 1)];
 }
 
 /**
- * Return the best available move for the current player using a simple
- * heuristic: take an immediate win if one exists, otherwise fall back to a
- * random legal move. (A full minimax implementation replaces this later.)
+ * Minimax search. Returns the score of `state` from the perspective of
+ * `aiPlayer`: positive when aiPlayer wins (sooner = larger), negative when
+ * aiPlayer loses (later = larger, i.e. closer to 0), and 0 for a draw.
+ *
+ * @param {import('./game.js').GameState} state
+ * @param {("X"|"O")} aiPlayer  the player the search maximizes for
+ * @param {number} depth        plies from the root (used to prefer fast wins)
+ * @returns {number}
+ */
+export function minimax(state, aiPlayer, depth) {
+  const result = checkWinner(state);
+  if (result === aiPlayer) return WIN_SCORE - depth;
+  if (result === 'draw') return 0;
+  if (result) return depth - WIN_SCORE; // opponent wins
+
+  const moves = getAvailableMoves(state);
+  const isMaximizing = state.currentPlayer === aiPlayer;
+  let best = isMaximizing ? -Infinity : Infinity;
+
+  for (const move of moves) {
+    const next = applyMove(state, move);
+    const score = minimax(next, aiPlayer, depth + 1);
+    best = isMaximizing ? Math.max(best, score) : Math.min(best, score);
+  }
+  return best;
+}
+
+/**
+ * Return the optimal move for the current player via minimax.
+ * Ties are broken toward the lowest index for deterministic behaviour.
  * @param {import('./game.js').GameState} state
  * @returns {number} a legal move index, or -1 if none are available
  */
@@ -32,44 +74,46 @@ export function getBestMove(state) {
   const moves = getAvailableMoves(state);
   if (moves.length === 0) return -1;
 
-  // Look for an immediate winning move for the current player.
+  const aiPlayer = state.currentPlayer;
+  let bestScore = -Infinity;
+  let bestMove = moves[0];
+
   for (const move of moves) {
-    const board = state.board.slice();
-    board[move] = state.currentPlayer;
-    const lines = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8],
-      [0, 3, 6], [1, 4, 7], [2, 5, 8],
-      [0, 4, 8], [2, 4, 6],
-    ];
-    for (const [a, b, c] of lines) {
-      const m = board[a];
-      if (m && m === board[b] && m === board[c]) {
-        return move;
-      }
+    const next = applyMove(state, move);
+    const score = minimax(next, aiPlayer, 1);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
     }
   }
-  return getRandomMove(state);
+  return bestMove;
 }
 
+/** Probability that "medium" plays the optimal (minimax) move. */
+const MEDIUM_OPTIMAL_PROBABILITY = 0.5;
+
 /**
- * Difficulty dispatcher. Maps a difficulty name to a move.
+ * Difficulty dispatcher. Blends minimax and random selection per tier.
  *
  * - "easy":   always random.
- * - "medium": heuristic (take a win, else random).
- * - "hard":   heuristic (placeholder until full minimax lands).
+ * - "medium": optimal with probability MEDIUM_OPTIMAL_PROBABILITY, else random.
+ * - "hard":   always optimal (minimax).
  *
  * @param {import('./game.js').GameState} state
  * @param {("easy"|"medium"|"hard")} difficulty
+ * @param {() => number} [rng] optional RNG in [0, 1); defaults to Math.random
  * @returns {number} a legal move index, or -1 if none are available
  */
-export function getMoveByDifficulty(state, difficulty) {
+export function getMoveByDifficulty(state, difficulty, rng = Math.random) {
   switch (difficulty) {
-    case 'easy':
-      return getRandomMove(state);
-    case 'medium':
     case 'hard':
       return getBestMove(state);
+    case 'medium':
+      return rng() < MEDIUM_OPTIMAL_PROBABILITY
+        ? getBestMove(state)
+        : getRandomMove(state, rng);
+    case 'easy':
     default:
-      return getRandomMove(state);
+      return getRandomMove(state, rng);
   }
 }

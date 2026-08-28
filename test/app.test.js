@@ -124,6 +124,43 @@ describe('app DOM wiring', () => {
     ctrl.destroy();
   });
 
+  it('disables the difficulty control in PvP and enables it in HvC', () => {
+    const ctrl = setup();
+    const difficultySelect = document.querySelector('[data-control="difficulty"]');
+    // PvP by default -> difficulty irrelevant and disabled.
+    expect(difficultySelect.disabled).toBe(true);
+    expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(true);
+
+    // Switch to HvC -> difficulty becomes relevant and enabled.
+    document.querySelector('[data-control="mode"]').value = 'pvc';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    expect(difficultySelect.disabled).toBe(false);
+    expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(false);
+
+    // Back to PvP -> disabled again.
+    document.querySelector('[data-control="mode"]').value = 'pvp';
+    document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
+    expect(difficultySelect.disabled).toBe(true);
+    ctrl.destroy();
+  });
+
+  it('PvP ignores difficulty: a finished game is a normal two-player result', () => {
+    const ctrl = setup();
+    // Difficulty is set to "hard" but mode is PvP, so it must not affect play.
+    document.querySelector('[data-control="difficulty"]').value = 'hard';
+    // X: 0,1,2 (top row win); O: 3,4 — purely human/human sequence.
+    clickCell(0); // X
+    clickCell(3); // O
+    clickCell(1); // X
+    clickCell(4); // O
+    clickCell(2); // X wins
+    expect(ctrl.getState().status).toBe('won');
+    expect(ctrl.getState().winner).toBe('X');
+    // No computer move should ever have been scheduled in PvP: only 5 marks.
+    expect(ctrl.getState().board.filter((c) => c !== null)).toHaveLength(5);
+    ctrl.destroy();
+  });
+
   it('in HvC the computer auto-responds after the human moves', () => {
     const ctrl = setup();
     document.querySelector('[data-control="mode"]').value = 'pvc';
