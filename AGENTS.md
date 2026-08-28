@@ -19,12 +19,22 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 ## AI (src/ai.js) — hybrid minimax + random
 - `getRandomMove(state, rng=Math.random)` — uniform random legal move (injectable rng).
 - `minimax(state, aiPlayer, depth)` — full minimax; depth-adjusted scores (win=10-depth, loss=depth-10, draw=0) so it prefers quick wins / slow losses.
-- `getBestMove(state)` — optimal move via minimax; ties broken to lowest index (deterministic).
+- `getBestMove(state)` — optimal move via minimax; ties broken to lowest index (deterministic). `getBestMove(empty)===0`, `minimax(empty)===0` (optimal play draws).
 - `getMoveByDifficulty(state, difficulty, rng=Math.random)`:
   - easy → 100% random
-  - medium → ~50% minimax / ~50% random (MEDIUM_OPTIMAL_PROBABILITY=0.5)
-  - hard → 100% minimax (never loses)
+  - medium → 50% minimax / 50% random (`MEDIUM_OPTIMAL_PROBABILITY=0.5`; boundary: rng<0.5 → optimal, rng>=0.5 → random)
+  - hard → 100% minimax (never loses; hard-vs-hard always draws)
 - Injectable `rng` makes the blend + random selection deterministic under test.
+- Graduated balance (verified by sim, computer=O vs random X, 120 games): hard losses=0, medium losses>0, easy losses>medium.
+
+## Mode labels — cohesive standard
+- Both the dropdown `<option>` and the `MODE_LABELS` map / mode indicator use `Player vs. Player` / `Player vs. Computer` ("Player vs. {Opponent}"). Previously the dropdown said "Human vs. Computer" while the indicator said "Player vs. Computer" — now consistent.
+
+## Tests — 78 passing, 100% coverage (stmts/branches/funcs/lines) on ai.js + game.js
+- game.js edge cases: non-numeric/non-finite index rejection, win precedence over full board, 9th-move win vs draw, empty moves on finished draw, full immutability, long-sequence turn alternation, WINNING_LINES invariant.
+- ai.js edge cases + balance: minimax(empty)=0, getBestMove(empty)=0, multi-win selection, medium boundary + 50/50 ratio, RNG covers all cells, graduated difficulty-balance sim, hard-vs-hard draws.
+- app.js edge cases: "Computer is thinking…" status, clicks ignored during thinking, hard blocks human threat, reset mid-game, difficulty-change resets in HvC, destroy() teardown.
+- Runtime ~55s locally / ~74s CI (balance sims). If CI time becomes an issue, lower the per-tier GAMES count in the graduated-balance test.
 
 ## Difficulty only affects HvC
 - In PvP the difficulty `<select>` is hidden AND disabled (not focusable); `onDifficultyChange` no-ops when mode!=='pvc'. `scheduleComputerMove` is gated on mode==='pvc', so difficulty never influences PvP.
