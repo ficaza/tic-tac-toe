@@ -15,10 +15,6 @@ permissions:
   pages: write
   id-token: write
 
-# Global environment variable for the entire workflow
-env:
-  NODE_VERSION: '22'
-
 jobs:
   deploy:
     name: Deploy static site
@@ -28,32 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      # Correct step to set up Node.js for your build
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          node-version: 24
 
-      # Standardize environment configurations for GitHub Pages
+      # Standardize environment configurations for GitHub Pages.
       - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      # Install dependencies and build project (Uncomment these if needed)
-      # - name: Install dependencies
-      #   run: npm ci
-      # - name: Build site
-      #   run: npm run build
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
-          # Change this path to your production build folder (e.g., 'dist' or 'build') 
-          # if your build step generates compiled code.
+          # The static site lives under src/ (no build step required).
           path: src
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
