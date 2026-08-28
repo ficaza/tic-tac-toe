@@ -68,6 +68,15 @@ body {
   gap: 4px;
 }
 
+/* Hide a control without removing it from layout flow. `visibility: hidden`
+   reserves the element's box (so neighbouring elements and the board never
+   shift when the difficulty field is shown/hidden) while also removing it
+   from the tab order and accessibility tree — so the select does not need to
+   be `disabled` to be non-interactive while hidden. */
+.control--hidden {
+  visibility: hidden;
+}
+
 .control label {
   font-size: 0.85rem;
   color: var(--color-muted);

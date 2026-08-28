@@ -15,7 +15,7 @@ const HTML = `
         <option value="pvc">Player vs. Computer</option>
       </select>
     </div>
-    <div class="control control--difficulty" id="difficulty-control" hidden>
+    <div class="control control--difficulty control--hidden" id="difficulty-control">
       <label for="difficulty-select">Difficulty</label>
       <select id="difficulty-select" data-control="difficulty">
         <option value="easy" selected>Easy</option>
@@ -120,27 +120,31 @@ describe('app DOM wiring', () => {
     expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
     // Mode label updated
     expect(document.querySelector('[data-mode-label]').textContent).toBe('Player vs. Computer');
-    expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(false);
+    expect(document.querySelector('#difficulty-control').classList.contains('control--hidden')).toBe(false);
     ctrl.destroy();
   });
 
-  it('disables the difficulty control in PvP and enables it in HvC', () => {
+  it('hides the difficulty control in PvP (reserved-space class) and shows it in HvC', () => {
     const ctrl = setup();
+    const difficultyControl = document.querySelector('#difficulty-control');
     const difficultySelect = document.querySelector('[data-control="difficulty"]');
-    // PvP by default -> difficulty irrelevant and disabled.
-    expect(difficultySelect.disabled).toBe(true);
-    expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(true);
+    // PvP by default -> difficulty irrelevant and hidden via the reserved-space
+    // class (NOT the `hidden` attribute, which would collapse layout).
+    expect(difficultyControl.classList.contains('control--hidden')).toBe(true);
+    expect(difficultyControl.hasAttribute('hidden')).toBe(false);
+    // The select is not `disabled`; it is simply non-interactive while hidden.
+    expect(difficultySelect.disabled).toBe(false);
 
-    // Switch to HvC -> difficulty becomes relevant and enabled.
+    // Switch to HvC -> difficulty becomes relevant and shown.
     document.querySelector('[data-control="mode"]').value = 'pvc';
     document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
-    expect(difficultySelect.disabled).toBe(false);
-    expect(document.querySelector('#difficulty-control').hasAttribute('hidden')).toBe(false);
+    expect(difficultyControl.classList.contains('control--hidden')).toBe(false);
 
-    // Back to PvP -> disabled again.
+    // Back to PvP -> hidden again, still without the `hidden` attribute.
     document.querySelector('[data-control="mode"]').value = 'pvp';
     document.querySelector('[data-control="mode"]').dispatchEvent(new Event('change'));
-    expect(difficultySelect.disabled).toBe(true);
+    expect(difficultyControl.classList.contains('control--hidden')).toBe(true);
+    expect(difficultyControl.hasAttribute('hidden')).toBe(false);
     ctrl.destroy();
   });
 

@@ -149,11 +149,13 @@ export function init(rootEl) {
 
   function onModeChange() {
     mode = modeSelect.value;
-    // Difficulty is irrelevant in PvP: hide AND disable the control so it has
-    // no effect on the game and is not focusable/announced.
+    // Difficulty is irrelevant in PvP. Rather than `hidden` (which collapses
+    // the field and shifts the board) or `disabled`, the control is visually
+    // hidden via a `visibility: hidden` class that reserves its layout box so
+    // the page never reflows. `visibility: hidden` also drops it from the tab
+    // order + a11y tree, so the select stays enabled yet non-interactive.
     const pvc = mode === 'pvc';
-    difficultyControl.hidden = !pvc;
-    difficultySelect.disabled = !pvc;
+    difficultyControl.classList.toggle('control--hidden', !pvc);
     updateModeIndicator();
     reset();
   }
@@ -172,8 +174,8 @@ export function init(rootEl) {
   difficultySelect.addEventListener('change', onDifficultyChange);
   resetBtn.addEventListener('click', reset);
 
-  // Difficulty starts disabled (default mode is PvP where it has no effect).
-  difficultySelect.disabled = mode !== 'pvc';
+  // Difficulty starts hidden (default mode is PvP where it has no effect).
+  difficultyControl.classList.toggle('control--hidden', mode !== 'pvc');
   updateModeIndicator();
   render();
 
