@@ -1,27 +1,59 @@
 {
-    "name": "tic-tac-toe",
-    "version": "1.0.0",
-    "description": "",
-    "main": "src/app.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/ficaza/tic-tac-toe.git"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "bugs": {
-      "url": "https://github.com/ficaza/tic-tac-toe/issues"
-    },
-    "homepage": "https://github.com/ficaza/tic-tac-toe#readme",
-    "devDependencies": {
-      "gh-pages": "^6.3.0",
-      "jest": "^30.5.0",
-      "jest-environment-jsdom": "^30.5.0",
-      "serve": "^14.2.6"
+  "name": "tic-tac-toe",
+  "version": "1.0.0",
+  "description": "A playable, accessible, responsive tic-tac-toe game built with vanilla HTML, CSS, and JavaScript.",
+  "private": true,
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "serve": "serve src -l 3000",
+    "lint": "eslint .",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "deploy": "gh-pages -d src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ficaza/tic-tac-toe.git"
+  },
+  "keywords": [
+    "tic-tac-toe",
+    "game",
+    "vanilla-js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ficaza/tic-tac-toe/issues"
+  },
+  "homepage": "https://ficaza.github.io/tic-tac-toe/",
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@eslint/js": "^10.0.1",
+    "babel-jest": "^30.0.0",
+    "eslint": "^10.9.1",
+    "gh-pages": "^6.3.0",
+    "globals": "^17.0.0",
+    "jest": "^30.5.0",
+    "jest-environment-jsdom": "^30.5.0",
+    "serve": "^14.2.6"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/app.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
     }
   }
+}
   
