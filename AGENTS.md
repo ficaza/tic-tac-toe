@@ -32,7 +32,7 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 
 ## CI / Deploy — BOTH GREEN; Pages is ENABLED
 - `.github/workflows/ci.yml`: lint + test:coverage on push/PR to main. GREEN on main.
-- `.github/workflows/deploy.yml`: on push to main + workflow_dispatch. Official `actions/configure-pages@v5` (enablement:true) + `actions/upload-pages-artifact@v3` (path: src) + `actions/deploy-pages@v4`. permissions: pages:write, id-token:write.
+- `.github/workflows/deploy.yml`: on push to main + workflow_dispatch. Official `actions/configure-pages@v6` + `actions/upload-pages-artifact@v5` (path: src) + `actions/deploy-pages@v5`. permissions: pages:write, id-token:write.
 - GitHub Pages is ENABLED (build_type: workflow). Public site LIVE: https://ficaza.github.io/tic-tac-toe/ (verified: HTTP 200, all assets serve, minimax present in deployed ai.js, cells clickable).
 - First-time enablement note: creating the Pages site requires repo Administration permission (the GITHUB_TOKEN / fine-grained API token without admin scope cannot). The repo owner enabled it once in Settings → Pages → Source: GitHub Actions; after that deploy runs succeed automatically.
 
