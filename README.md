@@ -49,3 +49,8 @@ npm run serve      # dev server at http://localhost:3000
 To enable Pages, set the repository Pages source to **GitHub Actions** (Settings → Pages → Build and deployment → Source: GitHub Actions). The deploy workflow handles the rest.
 
 
+## Future enhacements
+
+- Implement a server-side backend API that can handle persistent user data, sesions and/or authentication. 
+- Additional features may include a timer, a login page, a public leaderboard, winning banners or user interace for an enhaced user experience. 
+- E2E testing with gated deployment rules. 
