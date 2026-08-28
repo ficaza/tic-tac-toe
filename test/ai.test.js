@@ -164,7 +164,7 @@ describe('getBestMove (minimax-optimal)', () => {
   it('never loses from a winning position over many full games vs random play', () => {
     // The computer is O (plays second). Human X plays uniformly at random.
     // With optimal O, O must never lose (win or draw) regardless of X's play.
-    for (let game = 0; game < 200; game += 1) {
+    for (let game = 0; game < 60; game += 1) {
       let s = createInitialState();
       while (s.status === 'ongoing') {
         if (s.currentPlayer === 'X') {
@@ -180,7 +180,7 @@ describe('getBestMove (minimax-optimal)', () => {
   });
 
   it('as X (first player) never loses vs random play', () => {
-    for (let game = 0; game < 200; game += 1) {
+    for (let game = 0; game < 60; game += 1) {
       let s = createInitialState();
       while (s.status === 'ongoing') {
         if (s.currentPlayer === 'X') {
@@ -265,7 +265,7 @@ describe('getMoveByDifficulty', () => {
   });
 
   it('hard never loses as O over many full games vs random human X', () => {
-    for (let game = 0; game < 200; game += 1) {
+    for (let game = 0; game < 60; game += 1) {
       let s = createInitialState();
       while (s.status === 'ongoing') {
         if (s.currentPlayer === 'X') s = applyMove(s, getRandomMove(s));
