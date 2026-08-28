@@ -16,17 +16,25 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 - Scripts: `serve` (serve src -l 3000), `lint` (eslint .), `test` / `test:coverage` (jest, 100% coverage on pure modules), `deploy` (gh-pages -d src, manual alternative).
 - Test globals: test files need `globals.browser` + `globals.node` + `globals.jest` in eslint config (app tests use `document`).
 
-## CI / Deploy
-- `.github/workflows/ci.yml`: lint + test:coverage on push/PR to main & dev. GREEN on main.
-- `.github/workflows/deploy.yml`: on push to main + workflow_dispatch. Uses official `actions/configure-pages@v5` (enablement:true) + `actions/upload-pages-artifact@v3` (path: src) + `actions/deploy-pages@v4`. permissions: pages:write, id-token:write.
+## AI (src/ai.js) — hybrid minimax + random
+- `getRandomMove(state, rng=Math.random)` — uniform random legal move (injectable rng).
+- `minimax(state, aiPlayer, depth)` — full minimax; depth-adjusted scores (win=10-depth, loss=depth-10, draw=0) so it prefers quick wins / slow losses.
+- `getBestMove(state)` — optimal move via minimax; ties broken to lowest index (deterministic).
+- `getMoveByDifficulty(state, difficulty, rng=Math.random)`:
+  - easy → 100% random
+  - medium → ~50% minimax / ~50% random (MEDIUM_OPTIMAL_PROBABILITY=0.5)
+  - hard → 100% minimax (never loses)
+- Injectable `rng` makes the blend + random selection deterministic under test.
 
-## KNOWN BLOCKER — GitHub Pages first-time enablement
-- The deploy workflow FAILS at "Setup Pages" until Pages is enabled at the repo level.
-- First-time Pages enablement (creating the Pages site) requires repo **Administration** permission.
-- Neither the available fine-grained API token (no admin scope) NOR the Actions `GITHUB_TOKEN` (even with `pages: write`) can create the Pages site — error: "Resource not accessible by integration".
-- Browser is not logged in as repo owner, so settings/pages UI is inaccessible.
-- FIX (one-time, by repo owner): Repo Settings → Pages → Build and deployment → Source: **GitHub Actions**. Then re-run the Deploy workflow (Actions UI → "Deploy to GitHub Pages" → Run workflow, or push to main). Site goes live at https://ficaza.github.io/tic-tac-toe/ .
-- After enablement, `configure-pages` succeeds (site already exists) and deploy works.
+## Difficulty only affects HvC
+- In PvP the difficulty `<select>` is hidden AND disabled (not focusable); `onDifficultyChange` no-ops when mode!=='pvc'. `scheduleComputerMove` is gated on mode==='pvc', so difficulty never influences PvP.
+- App starts in PvP with difficulty disabled.
+
+## CI / Deploy — BOTH GREEN; Pages is ENABLED
+- `.github/workflows/ci.yml`: lint + test:coverage on push/PR to main. GREEN on main.
+- `.github/workflows/deploy.yml`: on push to main + workflow_dispatch. Official `actions/configure-pages@v5` (enablement:true) + `actions/upload-pages-artifact@v3` (path: src) + `actions/deploy-pages@v4`. permissions: pages:write, id-token:write.
+- GitHub Pages is ENABLED (build_type: workflow). Public site LIVE: https://ficaza.github.io/tic-tac-toe/ (verified: HTTP 200, all assets serve, minimax present in deployed ai.js, cells clickable).
+- First-time enablement note: creating the Pages site requires repo Administration permission (the GITHUB_TOKEN / fine-grained API token without admin scope cannot). The repo owner enabled it once in Settings → Pages → Source: GitHub Actions; after that deploy runs succeed automatically.
 
 ## Local verify commands
 `npm install && npm run lint && npm run test:coverage && npm run serve` (localhost:3000).
