@@ -41,6 +41,12 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 - `onDifficultyChange` still no-ops when mode!=='pvc', and `scheduleComputerMove` is gated on mode==='pvc', so difficulty never influences PvP.
 - App starts in PvP with the difficulty control hidden via the class.
 
+## Git policy — NO git operations by the agent
+- The agent MUST NOT perform any git operations itself: no `git commit`, `git push`, `git merge`, branch creation/switching, `gh pr merge`, `gh pr ready`, or any other write/mutation to the repository or its history.
+- When work is complete and ready to ship, the agent asks the owner to perform all git operations (commit, push, branch, PR, merge) and provides the exact commands/files to run.
+- Read-only git/`gh` inspection (e.g. `git status`, `git diff`, `gh pr view`, `gh pr checks`) is fine for verification only; never merge, push, or mutate.
+- Do not push to any branch, do not merge PRs, do not mark PRs ready — leave these to the owner.
+
 ## CI / Deploy — BOTH GREEN; Pages is ENABLED
 - `.github/workflows/ci.yml`: lint + test:coverage on push/PR to main. GREEN on main.
 - `.github/workflows/deploy.yml`: on push to main + workflow_dispatch. Official `actions/configure-pages@v6` + `actions/upload-pages-artifact@v5` (path: src) + `actions/deploy-pages@v5`. permissions: pages:write, id-token:write.
