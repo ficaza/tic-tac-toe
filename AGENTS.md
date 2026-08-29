@@ -37,8 +37,9 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 - Runtime ~55s locally / ~74s CI (balance sims). If CI time becomes an issue, lower the per-tier GAMES count in the graduated-balance test.
 
 ## Difficulty only affects HvC
-- In PvP the difficulty `<select>` is hidden AND disabled (not focusable); `onDifficultyChange` no-ops when mode!=='pvc'. `scheduleComputerMove` is gated on mode==='pvc', so difficulty never influences PvP.
-- App starts in PvP with difficulty disabled.
+- In PvP the difficulty field is visually hidden via a `control--hidden` class (`visibility: hidden`), NOT the `hidden` attribute and NOT `disabled`. `visibility: hidden` reserves the element's layout box (so the board and surrounding layout never shift when toggling modes) while dropping it from the tab order + a11y tree, so the select stays enabled yet non-interactive while hidden. Verified: `board.getBoundingClientRect().top` is identical in PvP, HvC, and PvP-again.
+- `onDifficultyChange` still no-ops when mode!=='pvc', and `scheduleComputerMove` is gated on mode==='pvc', so difficulty never influences PvP.
+- App starts in PvP with the difficulty control hidden via the class.
 
 ## CI / Deploy — BOTH GREEN; Pages is ENABLED
 - `.github/workflows/ci.yml`: lint + test:coverage on push/PR to main. GREEN on main.
