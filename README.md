@@ -76,11 +76,16 @@ npm run serve
 
 ### What Didn't Go Quite as Planned
 
-- **Open Hands model selection**: While setting up the harness for the firs time and configuring a default model, changes were needed to ensure a free model was properly configured.
-- **GitHub token and write permissions:**  A hardcoded a GitHub token was placed in the package.json file, while the file was never pushed to the repository, it was exposed to the development server's history. The issue was corrected by removing the integration configuration and working on a new Open Hands Cloud server. Gates to prevent the model performing git operations on the `main` branch or auto-approved pull requests should have been defined as owner-controlled gate as a precautionary mechanism. 
+- **Open Hands Project Configuration:** I initially linked the repository directly to the main branch. In hindsight, I should have designated a dev branch as the default environment and explicitly instructed the agent to halt automatic git operations, ensuring manual review and gated deployments.
+
+- **Initial Model Selection:** Configuring a free-tier model required manual entry of its identifier rather than selection from a predefined list. A minor typo caused the harness to fail ungracefully. Implementing a dropdown or selector widget would streamline this process and prevent similar errors.
+
+- **GitHub Token Exposure:** A hardcoded GitHub token was inadvertently saved in package.json. Although never pushed to the repository, it was exposed in the development server's history. I resolved this by deleting the integration configuration and migrating to a fresh Open Hands Cloud environment.
 
 ### What I Would Improve With More Time
 
 * Implement a server-side backend API to handle persistent user data, user sessions, and authentication.
+  
 * Introduce a public leaderboard, match history tracking, a game timer, and polished winning/losing transition banners.
+  
 * Add comprehensive End-to-End (E2E) testing (e.g., Playwright) tied to gated deployment rules.
