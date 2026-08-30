@@ -11,7 +11,7 @@ A playable, accessible, responsive tic-tac-toe web game built with vanilla HTML,
 The project was designed with a strict **separation of concerns** and an **accessibility-first** mindset:
 
 * **Pure Logic Separation:** Game rules and AI logic are decoupled from the DOM in pure ES modules (`src/game.js`, `src/ai.js`), making them fully unit-testable without a browser environment.
-* **Accessibility (a11y):** Built with full keyboard navigation, visible focus states, ARIA labels, and live status regions for screen readers.
+* **Accessibility (a11y):** Built with visible focus states, ARIA labels, and live status regions for screen readers.
 * **Responsive Design:** A single-screen layout optimized for both desktop and narrow mobile viewports.
 
 ---
