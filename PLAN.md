@@ -2,7 +2,7 @@
 
 ## 1. Objective
 
-Build and ship a playable, accessible, responsive tic-tac-toe web game using **vanilla HTML, CSS, and JavaScript** (no UI frameworks). The game supports two modes — **Human vs. Computer** and **Player vs. Player** — with an **Easy / Medium / Hard** difficulty selector for the computer opponent. The AI uses a **hybrid of the minimax algorithm and random move selection** to define the difficulty tiers. The app lives on a **single screen**, is organized under a root-level `src/` directory, and is deployed publicly as a static site via **GitHub Pages**. The project includes **ESLint** linting and **Jest** testing with broad coverage and edge cases, plus core npm configuration for a local dev server and GitHub Pages deployment using reliable, non-deprecated dependencies.
+Build and ship a playable, accessible, responsive tic-tac-toe web game using **vanilla HTML, CSS, and JavaScript** (no UI frameworks). The game supports two modes — **Human vs. Computer** and **Player (X) vs. Player (O)** — with an **Easy / Medium / Hard** difficulty selector for the computer opponent. The AI uses a **hybrid of the minimax algorithm and random move selection** to define the difficulty tiers. The app lives on a **single screen**, is organized under a root-level `src/` directory, and is deployed publicly as a static site via **GitHub Pages**. The project includes **ESLint** linting and **Jest** testing with broad coverage and edge cases, plus core npm configuration for a local dev server and GitHub Pages deployment using reliable, non-deprecated dependencies.
 
 ---
 
@@ -131,7 +131,7 @@ All are **devDependencies** (no runtime deps — the deployed site is static). A
 ### Step 8 — Build `src/index.html` (accessible single-screen markup)
 - **Goal:** Semantic, accessible structure on one screen.
 - **Actions:** Include `<meta name="viewport">`. Sections:
-  - Controls panel: mode `<select>` (Human vs Computer / Player vs Player), difficulty `<select>` shown only for HvC, a live **"Current mode"** label/badge.
+  - Controls panel: mode `<select>` (Human (X) vs Computer (O) / Player (X) vs Player (O)), difficulty `<select>` shown only for HvC, a live **"Current mode"** label/badge.
   - Status banner with `aria-live="polite"` announcing turn/winner.
   - 3×3 board using `role="grid"` with 9 `<button>` cells (`aria-label` per cell, disabled when filled, `aria-pressed` as appropriate).
   - Reset `<button>`.

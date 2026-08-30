@@ -3,8 +3,11 @@
 :root {
   --cell-size: clamp(64px, 18vw, 110px);
   --mark-size: clamp(2rem, 7vw, 3.25rem);
-  --color-x: #2563eb;
-  --color-o: #db2777;
+  /* Mark colours are checked against --color-surface (#1e293b), the cell
+     background. The previous #2563eb / #db2777 pair measured 2.83:1 and
+     3.18:1, below the 4.5:1 WCAG AA minimum. */
+  --color-x: #7cb2fb;
+  --color-o: #f78ac1;
   --color-bg: #0f172a;
   --color-surface: #1e293b;
   --color-surface-2: #334155;
@@ -93,6 +96,13 @@ select {
   cursor: pointer;
 }
 
+/* `appearance: none` strips the native control, and with it the UA focus
+   ring, so the indicator has to be supplied explicitly (WCAG 2.4.7). */
+select:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .mode-indicator {
   margin: 0;
   font-size: 0.9rem;
@@ -146,11 +156,13 @@ select {
   user-select: none;
 }
 
-.cell:hover:not(:disabled) {
+.cell:not([aria-disabled='true']):hover {
   background: var(--color-surface-2);
 }
 
-.cell:disabled {
+/* Unplayable cells stay focusable (see the note in app.js render()), so they
+   are styled as inert rather than removed from the tab order. */
+.cell[aria-disabled='true'] {
   cursor: default;
 }
 

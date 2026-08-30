@@ -11,8 +11,8 @@ const HTML = `
     <div class="control">
       <label for="mode-select">Mode</label>
       <select id="mode-select" data-control="mode">
-        <option value="pvp" selected>Player vs. Player</option>
-        <option value="pvc">Player vs. Computer</option>
+        <option value="pvp" selected>Player (X) vs. Player (O)</option>
+        <option value="pvc">Player (X) vs. Computer (O)</option>
       </select>
     </div>
     <div class="control control--difficulty control--hidden" id="difficulty-control">
@@ -24,11 +24,11 @@ const HTML = `
       </select>
     </div>
     <p class="mode-indicator" id="mode-indicator" aria-live="off">
-      Current mode: <strong data-mode-label>Player vs. Player</strong>
+      Current mode: <strong data-mode-label>Player (X) vs. Player (O)</strong>
     </p>
   </section>
   <p class="status" id="status" role="status" aria-live="polite">Player X's turn</p>
-  <div class="board" id="board" role="grid" aria-label="Tic-tac-toe board"></div>
+  <div class="board" id="board" role="group" aria-label="Tic-tac-toe board"></div>
   <div class="actions">
     <button type="button" id="reset-btn" data-action="reset">New game</button>
   </div>
@@ -102,9 +102,12 @@ describe('app DOM wiring', () => {
     const status = document.getElementById('status');
     expect(status.textContent).toContain('wins');
     expect(ctrl.getState().status).toBe('won');
-    // All cells disabled after game over.
+    // All cells unplayable after game over -- marked via aria-disabled, and
+    // deliberately NOT via the `disabled` property, which would drop them out
+    // of the tab order and throw keyboard focus to <body>.
     document.querySelectorAll('.cell').forEach((c) => {
-      expect(c.disabled).toBe(true);
+      expect(c.getAttribute('aria-disabled')).toBe('true');
+      expect(c.disabled).toBe(false);
     });
     ctrl.destroy();
   });
@@ -119,7 +122,7 @@ describe('app DOM wiring', () => {
     expect(cell(0).textContent).toBe('');
     expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
     // Mode label updated
-    expect(document.querySelector('[data-mode-label]').textContent).toBe('Player vs. Computer');
+    expect(document.querySelector('[data-mode-label]').textContent).toBe('Player (X) vs. Computer (O)');
     expect(document.querySelector('#difficulty-control').classList.contains('control--hidden')).toBe(false);
     ctrl.destroy();
   });
@@ -172,8 +175,8 @@ describe('app DOM wiring', () => {
     // Human (X) moves first.
     clickCell(0);
     expect(cell(0).textContent).toBe('X');
-    // While the computer is "thinking", board should be disabled.
-    expect(cell(1).disabled).toBe(true);
+    // While the computer is "thinking", the board should be unplayable.
+    expect(cell(1).getAttribute('aria-disabled')).toBe('true');
     // Flush the scheduled computer move.
     jest.advanceTimersByTime(400);
     const marks = document.querySelectorAll('.cell');
@@ -248,6 +251,41 @@ describe('app DOM wiring', () => {
     document.querySelector('[data-control="difficulty"]').dispatchEvent(new Event('change'));
     expect(ctrl.getState().board.every((c) => c === null)).toBe(true);
     expect(ctrl.getDifficulty()).toBe('hard');
+    ctrl.destroy();
+  });
+
+  it('keeps keyboard focus on the board after a move and after game over', () => {
+    const ctrl = setup();
+    cell(0).focus();
+    clickCell(0);
+    // Regression: the cell used to be given `disabled`, which made the browser
+    // drop focus to <body> after every single move.
+    expect(document.activeElement).toBe(cell(0));
+
+    cell(3).focus();
+    clickCell(3); // O
+    clickCell(1); // X
+    clickCell(4); // O
+    cell(2).focus();
+    clickCell(2); // X wins
+    expect(ctrl.getState().status).toBe('won');
+    expect(document.activeElement).toBe(cell(2));
+    expect(document.activeElement).not.toBe(document.body);
+    ctrl.destroy();
+  });
+
+  it('leaves the native button role intact and tracks aria-disabled per cell', () => {
+    const ctrl = setup();
+    // role="gridcell" would suppress the native button role, and the ARIA grid
+    // pattern this board does not implement.
+    document.querySelectorAll('.cell').forEach((c) => {
+      expect(c.getAttribute('role')).toBeNull();
+      expect(c.tagName).toBe('BUTTON');
+      expect(c.getAttribute('aria-disabled')).toBe('false');
+    });
+    clickCell(0);
+    expect(cell(0).getAttribute('aria-disabled')).toBe('true');  // filled
+    expect(cell(1).getAttribute('aria-disabled')).toBe('false'); // still open
     ctrl.destroy();
   });
 

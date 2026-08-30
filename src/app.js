@@ -19,8 +19,8 @@ import { getMoveByDifficulty } from './ai.js';
 /** @typedef {import('./game.js').GameState} GameState */
 
 const MODE_LABELS = {
-  pvp: 'Player vs. Player',
-  pvc: 'Player vs. Computer',
+  pvp: 'Player (X) vs. Player (O)',
+  pvc: 'Player (X) vs. Computer (O)',
 };
 
 const COMPUTER = 'O'; // In HvC, the human plays X and the computer plays O.
@@ -53,7 +53,10 @@ export function init(rootEl) {
       cell.type = 'button';
       cell.className = 'cell';
       cell.dataset.index = String(i);
-      cell.setAttribute('role', 'gridcell');
+      // No explicit role: the native <button> role is what we want here.
+      // (A `gridcell` role would suppress it, and the ARIA grid pattern also
+      // requires row wrappers plus arrow-key navigation, which this simple
+      // 3x3 board does not implement.)
       cell.setAttribute('aria-label', `Cell ${i + 1}, empty`);
       boardEl.appendChild(cell);
     }
@@ -75,17 +78,22 @@ export function init(rootEl) {
       if (mark) {
         cell.dataset.mark = mark;
         cell.setAttribute('aria-label', `Cell ${i + 1}, ${mark}`);
-        cell.setAttribute('aria-pressed', 'true');
       } else {
         delete cell.dataset.mark;
         cell.setAttribute('aria-label', `Cell ${i + 1}, empty`);
-        cell.setAttribute('aria-pressed', 'false');
       }
       cell.classList.toggle('cell--win', Boolean(
         state.winningLine && state.winningLine.includes(i),
       ));
-      // Disable cells that can't be played (filled, game over, or computer's turn).
-      cell.disabled = !isHumanTurn() || Boolean(mark);
+      // Mark cells that can't be played (filled, game over, or computer's
+      // turn) with `aria-disabled` rather than the `disabled` property.
+      // Setting `disabled` on the element that currently has focus makes the
+      // browser drop focus to <body>, which meant a keyboard player lost
+      // their place after every single move. `aria-disabled` conveys the same
+      // state to assistive tech while keeping the cell focusable; the actual
+      // move is already refused by handleCellClick's isHumanTurn/isLegalMove
+      // guards, so nothing illegal can get through.
+      cell.setAttribute('aria-disabled', String(!isHumanTurn() || Boolean(mark)));
     });
 
     statusEl.classList.remove('status--win', 'status--draw');

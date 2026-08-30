@@ -28,7 +28,7 @@ Repo: `ficaza/tic-tac-toe` (public). Default branch: `main`.
 - Graduated balance (verified by sim, computer=O vs random X, 120 games): hard losses=0, medium losses>0, easy losses>medium.
 
 ## Mode labels — cohesive standard
-- Both the dropdown `<option>` and the `MODE_LABELS` map / mode indicator use `Player vs. Player` / `Player vs. Computer` ("Player vs. {Opponent}"). Previously the dropdown said "Human vs. Computer" while the indicator said "Player vs. Computer" — now consistent.
+- Both the dropdown `<option>` and the `MODE_LABELS` map / mode indicator use `Player (X) vs. Player (O)` / `Player (X) vs. Computer (O)` ("Player (X) vs. {Opponent (O)}"). Previously the dropdown said "Human vs. Computer" while the indicator said "Player (X) vs. Computer (O)" — now consistent.
 
 ## Tests — 78 passing, 100% coverage (stmts/branches/funcs/lines) on ai.js + game.js
 - game.js edge cases: non-numeric/non-finite index rejection, win precedence over full board, 9th-move win vs draw, empty moves on finished draw, full immutability, long-sequence turn alternation, WINNING_LINES invariant.
